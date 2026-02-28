@@ -1,6 +1,6 @@
 
 import csv
-with open("data.txt", "w",encoding="utf-8") as f1:
+with open("data.txt", "w", encoding="utf-8") as f1:
     f1.write("Hello\n")
     f1.write("Python\n")
 with open("data.txt", "r", encoding="utf-8") as f1:
