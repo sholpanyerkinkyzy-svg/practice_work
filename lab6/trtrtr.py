@@ -1,0 +1,66 @@
+#1
+import pandas as pd
+df = pd.read_excel('catalog_products.xlsx ')
+print("#1")
+print(f"DataFrame: {df.shape}")
+print("\nТип Данных:")
+print(df.dtypes)
+print("\nПропуски:")
+print(df.isnull().sum())
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width',1000)
+print(df.head())
+
+#2
+df = pd.read_excel('catalog_products.xlsx ')
+cols_to_fix = df.columns[1:]
+for col in cols_to_fix:
+    df[col] = pd.to_numeric(df[col], errors='coerce').astype(float)
+    df[col] = df[col].fillna(df[col].mean())
+df[cols_to_fix].dtypes.head()
+df[cols_to_fix].isnull().sum().head()
+print("#2")
+print(df[['col_2', 'col_3']].head())
+
+#3
+import numpy as np
+df['total_value']=df['col_2'] * df['col_3']
+df['double_stock '] = df['col_4'] * 2
+df['log_price '] = np.log(df['col_2'])
+print("#3")
+print(df[['total_value', 'double_stock ', 'log_price ']].head())
+
+#4
+import pandas as pd
+df = pd.read_excel('catalog_products.xlsx ')
+df['col_2'] = pd.to_numeric(df['col_2'], errors='coerce')
+mask = (df['col_2'] > 500) & (df['col_7'] == "Electronics")
+electronics_expensive = df.loc[mask, ['col_2','col_7']].copy()
+print("#4")
+print(electronics_expensive.head())
+
+#5
+category_analysis = df.groupby('col_7').agg(
+    mean_price=('col_2', 'mean'),
+    max_price=('col_2', 'max'),
+    total_quantity=('col_3', 'sum')
+).reset_index()
+category_analysis = category_analysis.rename(columns={'col_7': 'category'})
+print("#5")
+print(category_analysis)
+
+#6
+target_cols = [f'col_{i}' for  i in range(2,12)]
+subset = df[target_cols].copy()
+for col in target_cols:
+    subset[col] = pd.to_numeric(subset[col], errors = 'coerce')
+stats = subset.agg(['mean', 'median', 'std']).T
+stats_df = stats.reset_index().rename(columns={'index': 'column'})
+print("#6")
+print(stats_df)
+
+
+
+
+
+
