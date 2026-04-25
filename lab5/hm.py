@@ -155,3 +155,107 @@ def task_29_30():
 @app.get("/")
 def welcome():
     return {"message": "Сервер қосулы. Alibi және Asel есімдері қолданылды. /docs арқылы тексеріңіз"}
+
+
+# 31 және 32 Есеп
+@app.get("/task31-32")
+def task_31_32():
+    data = {
+        "order_id": [101, 102],
+        "product_name": ["Laptop", "Mouse"],
+        "price": [1200, 25]
+    }
+    df = pd.DataFrame(data)
+    # 31
+    df["quantity"] = [1, 2]
+    # 32
+    df["total_price"] = df["price"] * df["quantity"]
+    return df.to_dict(orient="records")
+
+# 33, 34, 35
+@app.get("/task33-35")
+def task_33_35():
+    data = {
+        "product_name": ["Laptop", "Mouse", "Shirt"],
+        "category": ["Electronics", "Electronics", "Clothing"],
+        "price": [1200, 25, 20]
+    }
+    df = pd.DataFrame(data)
+    # 33
+    electronics = df[df["category"] == "Electronics"]
+    # 34
+    counts = df.groupby("category").size().reset_index(name="count")
+    # 35
+    mean_prices = df.groupby("category")["price"].mean().reset_index(name="mean_price")
+    return {
+        "electronics": electronics.to_dict(orient="records"),
+        "counts": counts.to_dict(orient="records"),
+        "means": mean_prices.to_dict(orient="records")
+    }
+
+# 36
+@app.get("/task36-37")
+def task_36_37():
+    data = {
+        "order_id": [101, 102, 103, 104],
+        "total_price": [1200, 50, 500, 1500]
+    }
+    df = pd.DataFrame(data)
+    # 36
+    df_sorted = df.sort_values(by="total_price", ascending=False)
+    # 37
+    top_3 = df_sorted.head(3)
+    return top_3.to_dict(orient="records")
+
+# 38, 39, 40
+@app.get("/task38-40")
+def task_38_40():
+    users_df = pd.DataFrame({"user_id": [1, 2], "user_name": ["John", "Alice"]})
+    orders_df = pd.DataFrame({"order_id": [101, 102, 103], "user_id": [1, 2, 1], "total_price": [1200, 50, 500]})
+    # 38
+    merged = pd.merge(orders_df, users_df, on="user_id")
+    # 39
+    mean_total = merged.groupby("user_name")["total_price"].mean().reset_index(name="mean_total")
+    # 40
+    order_counts = merged.groupby("user_name")["order_id"].count().reset_index(name="orders_count")
+    return {"merged": merged.to_dict(orient="records"), "stats": order_counts.to_dict(orient="records")}
+
+# 41, 42, 43, 44 Есеп
+@app.get("/task41-44")
+def task_41_44():
+    data = {
+        "user_name": ["John", "John", "Alice", "Bob"],
+        "total_price": [1200, 500, 25, 1700],
+        "category": ["Electronics", "Clothing", "Clothing", "Electronics"]
+    }
+    df = pd.DataFrame(data)
+    # 41
+    max_order = df.groupby("user_name")["total_price"].max().reset_index(name="max_order")
+    # 42
+    unique_cats = df.groupby("user_name")["category"].nunique().reset_index(name="unique_categories")
+    user_sums = df.groupby("user_name")["total_price"].sum().reset_index(name="total_sum")
+    user_sums["VIP"] = user_sums["total_sum"] > 1000
+    user_means = df.groupby("user_name")["total_price"].mean().reset_index(name="mean_total")
+    final_sort = pd.merge(user_sums, user_means, on="user_name")
+    sorted_df = final_sort.sort_values(by=["total_sum", "mean_total"], ascending=[False, True])
+    return sorted_df.to_dict(orient="records")
+
+# 45 Есеп (Финалдық есеп)
+@app.get("/task45", response_class=HTMLResponse)
+def task_45():
+    data = {
+        "user_name": ["John", "John", "Alice"],
+        "order_id": [101, 103, 102],
+        "total_price": [1200, 500, 25],
+        "category": ["Electronics", "Clothing", "Clothing"]
+    }
+    df = pd.DataFrame(data)
+    report = df.groupby("user_name").agg(
+        total_orders=("order_id", "count"),
+        total_sum=("total_price", "sum"),
+        mean_total=("total_price", "mean"),
+        max_order=("total_price", "max"),
+        unique_categories=("category", "nunique")
+    ).reset_index()
+    report["VIP"] = report["total_sum"] > 1000
+    return report.to_html(classes="table table-bordered table-striped")
