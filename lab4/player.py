@@ -267,3 +267,104 @@ def decide_action(player):
 def decide():
     p = Player(1, "Sholpan", 40)
     return {"action": decide_action(p)}
+
+
+# 17
+class EnhancedPlayer(Player):
+    def __init__(self, player_id: int, name: str, hp: int):
+        super().__init__(player_id, name, hp)
+        self._inventory = Inventory()  # Приватты атрибут
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, value):
+        self._hp = max(0, value)
+
+    def __del__(self):
+
+        print(f"Player {self._name} жойылды")
+
+
+@app.get("/player-advanced")
+def player_advanced():
+    p = EnhancedPlayer(7, " Sholpan ", 100)
+    p.hp = -20  # Setter жұмыс істейді, hp 0 болады
+    return {"name": p._name, "hp": p.hp}
+
+
+# 18
+@app.get("/inventory-iterator")
+def inventory_iterator():
+    inv = Inventory()
+    inv.add_item(Item(1, "Golden Sword", 100))
+    inv.add_item(Item(2, "Wooden Shield", 20))
+
+
+    powerful_items = [str(i) for i in inv.get_items() if i.power > 50]
+    return {"powerful_items": powerful_items}
+
+
+# 19
+def analyze_inventory(inventories: list):
+    all_items = []
+    for inv in inventories:
+        all_items.extend(inv.get_items())
+
+    unique_names = {i.name for i in all_items}  # Set арқылы уникалды есімдер
+    top_item = max(all_items, key=lambda x: x.power) if all_items else None
+
+    return {
+        "unique_items_count": len(unique_names),
+        "top_power_item": str(top_item)
+    }
+
+
+@app.get("/analyze-items")
+def analyze_items_route():
+    inv1 = Inventory()
+    inv1.add_item(Item(1, "Sword", 50))
+    inv2 = Inventory()
+    inv2.add_item(Item(1, "Sword", 50))  # Дубликат аты бойынша
+    inv2.add_item(Item(3, "Staff", 80))
+
+    return analyze_inventory([inv1, inv2])
+
+
+#20
+
+@app.get("/final-simulation")
+def final_simulation():
+
+    p1 = Warrior(10, "Aiman", 120)
+    p2 = Mage(11, "Ali", 80)
+    item_drop = Item(50, "Magic Wand", 40)
+
+
+    events = [
+        Event("ATTACK", {"damage": 30}),
+        Event("LOOT", {"item": item_drop}),
+        Event("HEAL", {"amount": 15})
+    ]
+
+
+    log_results = []
+    logger = Logger()
+
+    for event in events:
+
+        if event.type == "ATTACK":
+            p1.handle_event(event)
+        if event.type == "LOOT":
+            p2.handle_event(event)
+        logger.log(event, p1, "simulation_log.txt")
+        log_results.append(f"{event.type} processed")
+
+    return {
+        "status": "Simulation Complete",
+        "warrior_final_hp": p1._hp,
+        "mage_inventory_count": len(p2.inventory.get_items()),
+        "events_processed": log_results
+    }
